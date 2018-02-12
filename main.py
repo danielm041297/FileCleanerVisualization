@@ -2,6 +2,10 @@ import os
 import pathlib
 import glob
 import argparse
+import datetime
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.dates as mdates
 class FileData:
     def __init__(self, access_time, modify_time, file_size):
         self.access_time = access_time
@@ -42,9 +46,10 @@ class FileCleaner:
             for file in _files:
 
                 statinfo = os.stat(file)
-                access_time = statinfo.st_atime
-                mod_time = statinfo.st_size
-                size = statinfo.st_mtime
+                access_time = datetime.datetime.fromtimestamp(round(statinfo.st_atime))
+                mod_time = datetime.datetime.fromtimestamp(round(statinfo.st_mtime))
+                size = statinfo.st_size
+                print(size)
                 fdata = FileData(access_time, mod_time, size)
                 if file in self.files:
                     if access_time != self.files[file]:
@@ -52,8 +57,8 @@ class FileCleaner:
                 else:
                     self.files[file] = fdata
 
-    def print(self):
-        print(self.files)
+    def showGraph(self):
+        return
 
 
 
@@ -75,3 +80,15 @@ file_type = args.file_type
 
 finder = FileCleaner(directory)
 finder.getFiles()
+
+# adates = []
+# sizes = []
+# for fil in finder.files.values():
+#     adates.append(fil.access_time)
+#     sizes.append(fil.file_size)
+# plt.scatter(adates, sizes, marker="x", color="black", linewidths=1, label="Crosses")
+# plt.legend(scatterpoints=1)
+#
+# plt.show()
+
+#TODO: If any files get above 1 months old I should email myself reminding me to delete certain files. make a subprocess
