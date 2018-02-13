@@ -7,6 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.dates as mdates
 import math
+import smtplib
+import socket
+import sys
+from email.mime.text import MIMEText
 
 class FileData:
     def __init__(self, access_time, modify_time, file_size):
@@ -27,7 +31,7 @@ class FileCleaner:
         dirs.insert(0, '')
         return dirs
 
-    def getFiles(self):
+    def checkFiles(self):
         dirs = self.getSubDirectories()
 
         if verbosity:
@@ -56,6 +60,7 @@ class FileCleaner:
 
                 if access_time < time_minimum:
                     continue
+                if access_time.month < datetime.date.today().month - 3:
 
                 fdata = FileData(access_time, mod_time, size)
                 if file in self.files:
@@ -89,12 +94,29 @@ class FileCleaner:
         plt.xlim(time_minimum, time_maximum)
 
         plt.show()
+        plt.savefig("myfiles.png")
+
+    def sendEmail(self):
+
+        msg = MIMEText("You have files that need to be deleted!")
+
+        fro = "ddmoorish@gmail.com"
+        to = "rajiv@domain.com"
+        msg['Subject'] = 'StayOrganized message'
+        msg['From'] = fro
+        msg['To'] = to
+        s = smtplib.SMTP('127.0.0.1')
+        s.sendmail(fro, to, msg.as_string())
+        s.quit()
 
 parser = argparse.ArgumentParser(description="Visualize file accesses to decide if you need to delete")
 parser.add_argument("--verbosity", help="increase output verbosity")
 parser.add_argument("--visualize", help = "Show matplot of python file accesses")
 parser.add_argument("--directory", help = "The directory you want to access")
 parser.add_argument("--file_type", help = "The file type extension you want to search for")
+parser.add_argument("--num_months", help = "The number of months old from last access before you want to be notified ")
+parser.add_argument("--email", help = "The number of months old from last access before you want to be notified ")
+
 
 args = parser.parse_args()
 
@@ -105,9 +127,11 @@ verbosity = args.verbosity
 visualize = args.visualize
 directory = args.directory
 file_type = args.file_type
+num_months = args.num_months
+email = args.email
 
 finder = FileCleaner(directory)
-finder.getFiles()
+finder.checkFiles()
 if visualize:
     finder.showGraph()
 
